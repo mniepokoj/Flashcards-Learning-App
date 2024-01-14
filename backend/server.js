@@ -8,7 +8,7 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const secretKey = 'tajny_klucz';
+const secretKey = 'bardzo_tajny_klucz';
 const autoExpirationTime = "24h";
 
 const express = require('express');
@@ -35,7 +35,7 @@ function verifyToken(token)
   }
 }
 
-app.post('/addUser', async (req, res) => 
+app.post('/api/addUser', async (req, res) => 
 {
   const username = req.body.username;
   const password = req.body.password;
@@ -68,7 +68,7 @@ app.post('/addUser', async (req, res) =>
   }
 });
 
-app.get('/isLoggedIn', async (req, res) => 
+app.get('/api/isLoggedIn', async (req, res) => 
 {
   const token = req.body.token;
   if(!token)
@@ -91,7 +91,33 @@ app.get('/isLoggedIn', async (req, res) =>
   }
 });
 
-app.get('/getFlashcards', async (req, res) => 
+app.post('/api/logIn', async (req, res) => 
+{
+  const username = req.body.username;
+  const password = req.body.password;
+  if(!username || !password)
+  {
+    return res.status(400).json({error: 'Username and password are required'});
+  }
+
+  try 
+  {
+    const userRef = db.collection('User_collection').where('username', '==', username).where('password','==', password);
+    const snapshot = await userRef.get();
+    if(snapshot.empty)
+      return res.status(401).json({error: 'Invalid username or password'});
+
+    const token = generateToken(snapshot.id, snapshot.username);
+    return res.status(200).json({user_id: snapshot.id, username: snapshot.username, token: token});
+  } 
+  catch (error) 
+  {
+    console.error('Error retrieving data:', error);
+    return res.status(500).json(error);
+  }
+});
+
+app.get('/api/getFlashcards', async (req, res) => 
 {
   const token = req.body.token;
   if(!token)
@@ -123,7 +149,7 @@ app.get('/getFlashcards', async (req, res) =>
   }
 });
 
-app.put('/addFlashcard', async (req, res) => 
+app.put('/api/addFlashcard', async (req, res) => 
 {
   const token = req.body.token;
   const item = req.body.item;
@@ -156,7 +182,7 @@ app.put('/addFlashcard', async (req, res) =>
   }
 });
 
-app.delete('/deleteFlashcard', async (req, res) => 
+app.delete('/api/deleteFlashcard', async (req, res) => 
 {
   const token = req.body.token;
   const flashcard_id = req.body.flashcard_id;
@@ -194,7 +220,7 @@ app.delete('/deleteFlashcard', async (req, res) =>
   }
 });
 
-app.get('/test', async (req, res) => 
+app.get('/api/test', async (req, res) => 
 {
 
   let responseCode = 200;
@@ -224,7 +250,7 @@ app.get('/test', async (req, res) =>
   return res.status(responseCode).json(responseMessage);
 });
 
-app.get('/', (req, res) => 
+app.get('/api/', (req, res) => 
 {
   res.send('Hello from App Enginefd!');
 });
@@ -235,7 +261,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
-
-//https://flashcards-learning-app.lm.r.appspot.com
-//flashcards-learning-app@appspot.gserviceaccount.com
