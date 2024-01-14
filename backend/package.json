@@ -21,7 +21,8 @@
     "dependencies": {
       "express": "^4.16.3",
       "@google-cloud/firestore": "^5.0.0",
-      "firebase-admin": "^9.0.0"
+      "firebase-admin": "^9.0.0", 
+      "jsonwebtoken": "^8.5.1"
     },
     "devDependencies": {
       "c8": "^8.0.0",
