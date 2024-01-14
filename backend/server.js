@@ -2,6 +2,7 @@
 const serviceAccount = require('./serviceAccountKey.json');
 const admin = require('firebase-admin');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -14,6 +15,12 @@ const autoExpirationTime = "24h";
 const express = require('express');
 const app = express();
 app.use(express.json());
+app.use(cors());
+
+const PORT = parseInt(process.env.PORT) || 8080;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}...`);
+});
 
 
 function generateToken(userId, username) 
@@ -68,7 +75,7 @@ app.post('/api/addUser', async (req, res) =>
   }
 });
 
-app.get('/api/isLoggedIn', async (req, res) => 
+app.post('/api/isLoggedIn', async (req, res) => 
 {
   const token = req.body.token;
   if(!token)
@@ -117,7 +124,7 @@ app.post('/api/logIn', async (req, res) =>
   }
 });
 
-app.get('/api/getFlashcards', async (req, res) => 
+app.post('/api/getFlashcards', async (req, res) => 
 {
   const token = req.body.token;
   if(!token)
@@ -149,7 +156,7 @@ app.get('/api/getFlashcards', async (req, res) =>
   }
 });
 
-app.put('/api/addFlashcard', async (req, res) => 
+app.post('/api/addFlashcard', async (req, res) => 
 {
   const token = req.body.token;
   const item = req.body.item;
@@ -182,7 +189,7 @@ app.put('/api/addFlashcard', async (req, res) =>
   }
 });
 
-app.delete('/api/deleteFlashcard', async (req, res) => 
+app.post('/api/deleteFlashcard', async (req, res) => 
 {
   const token = req.body.token;
   const flashcard_id = req.body.flashcard_id;
@@ -253,11 +260,6 @@ app.get('/api/test', async (req, res) =>
 app.get('/api/', (req, res) => 
 {
   res.send('Hello from App Enginefd!');
-});
-
-const PORT = parseInt(process.env.PORT) || 8080;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}...`);
 });
 
 module.exports = app;
