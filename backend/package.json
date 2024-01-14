@@ -19,7 +19,9 @@
     "author": "Google Inc.",
     "license": "Apache-2.0",
     "dependencies": {
-      "express": "^4.16.3"
+      "express": "^4.16.3",
+      "@google-cloud/firestore": "^5.0.0",
+      "firebase-admin": "^9.0.0"
     },
     "devDependencies": {
       "c8": "^8.0.0",
