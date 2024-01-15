@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
 import config from '../config';
 
-function Login({ onLogin }) {
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [loginError, setLoginError] = useState(null);
+function Register({ onLogin }) {
+  const [registerData, setRegisterData] = useState({ username: '', password: '' });
+  const [registerError, setRegisterError] = useState(null);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setLoginData({ ...loginData, [name]: value });
+    setRegisterData({ ...registerData, [name]: value });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (registerData.username.length < 4 || registerData.password.length < 4) {
+        setRegisterError('Nazwa użytkownika i hasło muszą mieć co najmniej 4 znaki.');
+        return;
+      }
     try {
-      const response = await fetch(config.backendUrl + '/logIn', {
+      const response = await fetch(config.backendUrl + '/addUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(loginData),
+        body: JSON.stringify(registerData),
       });
 
       if (response.ok) 
@@ -28,23 +32,26 @@ function Login({ onLogin }) {
         const user_id = responseData.user_id;
         localStorage.setItem('token', token);
         localStorage.setItem('user_id', user_id);
-        localStorage.setItem('username', loginData.username);
+        localStorage.setItem('username', registerData.username);
         onLogin();
+      }
+      else if(response.status === 409) 
+      {
+        setRegisterError('Podany login już istnieje');
       }
       else 
       {
-        setLoginError('Błędne dane logowania');
+        setRegisterError('Wystąpił błąd rejestracji');
       }
     } catch (error) 
     {
-      console.error('Błąd serwera:', error);
-      setLoginError('Wystąpił błąd serwera');
+      setRegisterError('Wystąpił błąd serwera:' + error);
     }
   };
 
   return (
     <div>
-      <h2>Formularz logowania</h2>
+      <h2>Formularz rejestracji</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>
@@ -52,7 +59,7 @@ function Login({ onLogin }) {
             <input
               type="text"
               name="username"
-              value={loginData.username}
+              value={registerData.username}
               onChange={handleInputChange}
             />
           </label>
@@ -63,18 +70,18 @@ function Login({ onLogin }) {
             <input
               type="password"
               name="password"
-              value={loginData.password}
+              value={registerData.password}
               onChange={handleInputChange}
             />
           </label>
         </div>
         <div>
-          <button type="submit">Zaloguj</button>
+          <button type="submit">Zarejestruj</button>
         </div>
       </form>
-      {loginError && <p>{loginError}</p>}
+      {registerError && <p>{registerError}</p>}
     </div>
   );
 }
 
-export default Login;
+export default Register;

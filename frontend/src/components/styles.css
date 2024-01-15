@@ -22,10 +22,7 @@
     overflow: hidden;
     cursor: pointer;
     display: block;
-  }
-
-  .loginButton {
-    margin: 0 auto;
+    margin: 5px auto;
   }
   
   

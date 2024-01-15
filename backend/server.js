@@ -9,7 +9,7 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const secretKey = 'bardzo_tajny_klucz';
+const secretKey = 'tajny_klucz';
 const autoExpirationTime = "24h";
 
 const express = require('express');
@@ -77,7 +77,8 @@ app.post('/api/addUser', async (req, res) =>
 
 app.post('/api/isLoggedIn', async (req, res) => 
 {
-  const token = req.body.token;
+  const token = req.header('Authorization');
+
   if(!token)
   {
     return res.status(400).json({error: 'Token is required'});
@@ -113,9 +114,9 @@ app.post('/api/logIn', async (req, res) =>
     const snapshot = await userRef.get();
     if(snapshot.empty)
       return res.status(401).json({error: 'Invalid username or password'});
-
-    const token = generateToken(snapshot.id, snapshot.username);
-    return res.status(200).json({user_id: snapshot.id, username: snapshot.username, token: token});
+    const userDoc = snapshot.docs[0];
+    const token = generateToken(userDoc.data().user_id, userDoc.data().username);
+    return res.status(200).json({user_id: userDoc.data().user_id, username: userDoc.data().username, token: token});
   } 
   catch (error) 
   {
@@ -124,9 +125,9 @@ app.post('/api/logIn', async (req, res) =>
   }
 });
 
-app.post('/api/getFlashcards', async (req, res) => 
+app.get('/api/getFlashcards', async (req, res) => 
 {
-  const token = req.body.token;
+  const token = req.header('Authorization');
   if(!token)
   {
     return res.status(400).json({error: 'Token is required'});
@@ -156,9 +157,9 @@ app.post('/api/getFlashcards', async (req, res) =>
   }
 });
 
-app.post('/api/addFlashcard', async (req, res) => 
+app.put('/api/addFlashcard', async (req, res) => 
 {
-  const token = req.body.token;
+  const token = req.header('Authorization');
   const item = req.body.item;
   const translation = req.body.translation;
   if(!token || !item || !translation || !token)
@@ -177,7 +178,6 @@ app.post('/api/addFlashcard', async (req, res) =>
     const newFlashcardIdSnapshot = await newFlashcardIdRef.get();
     const newFlashcardId = newFlashcardIdSnapshot.data().id;
     newFlashcardIdRef.set({id: newFlashcardId + 1});
-
     const newFlashcardRef = flashCardsRef.add({item: item, translation: translation, user_id: decodedToken.userId, flashcard_id: newFlashcardId });
     const newFlashcardSnapshot = await newFlashcardRef;
     return res.status(200).json({flashcard_id: newFlashcardId});
@@ -189,14 +189,13 @@ app.post('/api/addFlashcard', async (req, res) =>
   }
 });
 
-app.post('/api/deleteFlashcard', async (req, res) => 
+app.delete('/api/deleteFlashcard', async (req, res) => 
 {
-  const token = req.body.token;
-  const flashcard_id = req.body.flashcard_id;
+  const token = req.header('Authorization');
+  const flashcard_id = parseInt(req.query.flashcard_id);
 
-  if(!token || !flashcard_id)
-  {
-    return res.status(400).json({error: 'All fields required'});
+  if (!token || !flashcard_id || isNaN(flashcard_id)) {
+    return res.status(400).json({ error: 'All fields required' });
   }
 
   try 
@@ -205,10 +204,8 @@ app.post('/api/deleteFlashcard', async (req, res) =>
     if (!decodedToken)
       return res.status(401).json({error: 'Invalid token'});
 
-    const flashCardRef = db.collection('Flashcards_collection').where('user_id', '==', decodedToken.userId)
-                                                              .where('flashcard_id', '==', flashcard_id);
+    const flashCardRef = db.collection('Flashcards_collection').where('flashcard_id', '==', flashcard_id);
     const flashcardSnapshot = await flashCardRef.get();
-
     if (flashcardSnapshot.empty) {
       return res.status(404).json({ error: 'Flashcard not found' });
     }
@@ -237,9 +234,6 @@ app.get('/api/test', async (req, res) =>
   {
     const userRef = db.collection('Flashcards_collection').doc('User_doc');
     const snapshot = await userRef.get();
-
-    console.log(snapshot.data());
-
     if (snapshot.empty) 
     {
         responseMessage = {};
