@@ -6,8 +6,9 @@
     "main": "server.js",
     "scripts": {
       "start": "node server.js",
-      "deploy": "gcloud app deploy",
+      "deploy": "gcloud app deploy app.yaml",
       "test": "c8 mocha -p -j 2 --exit test/*.test.js"
+      
     },
     "repository": {
       "type": "git",

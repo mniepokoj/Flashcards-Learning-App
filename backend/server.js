@@ -224,36 +224,9 @@ app.delete('/api/deleteFlashcard', async (req, res) =>
   }
 });
 
-app.get('/api/test', async (req, res) => 
-{
-
-  let responseCode = 200;
-  let responseMessage = 'None';
-
-  try 
-  {
-    const userRef = db.collection('Flashcards_collection').doc('User_doc');
-    const snapshot = await userRef.get();
-    if (snapshot.empty) 
-    {
-        responseMessage = {};
-    }
-    else
-    {
-    responseMessage = snapshot.data();
-    }
-  } catch (error) 
-  {
-    console.error('Error retrieving data:', error);
-    responseCode = 500; // Ustaw kod odpowiedzi na 500 w przypadku błędu
-    responseMessage = error;
-  }
-  return res.status(responseCode).json(responseMessage);
-});
-
 app.get('/api/', (req, res) => 
 {
-  res.send('Hello from App Enginefd!');
+  res.send('Hello from App Engine backend!');
 });
 
 module.exports = app;

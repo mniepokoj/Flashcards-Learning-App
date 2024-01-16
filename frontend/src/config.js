@@ -1,5 +1,5 @@
 const config = {
-    backendUrl: `http://localhost:8080/api`,
+    backendUrl: `https://backend-dot-flashcards-learning-app.lm.r.appspot.com/api`,
   };
   
   export default config;
