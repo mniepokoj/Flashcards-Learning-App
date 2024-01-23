@@ -65,7 +65,7 @@ class FlashcardLearningComponent extends React.Component {
   handleNext = () => {
     const { currentFlashcardIndex, flashcards, correctTranslations } = this.state;
 
-    if (currentFlashcardIndex < flashcards.length - 1) {
+    if (currentFlashcardIndex < flashcards.length ) {
       this.setState((prevState) => ({
         currentFlashcardIndex: prevState.currentFlashcardIndex + 1,
         userTranslation: '',

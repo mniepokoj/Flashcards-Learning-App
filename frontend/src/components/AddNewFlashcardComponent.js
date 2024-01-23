@@ -60,7 +60,8 @@ class AddNewFlashcardComponent extends React.Component {
       if (response.ok) {
         const currentFlashcards = this.props.flashcards;
         const { flashcard_id } = await response.json();
-        const updatedFlashcards = [...currentFlashcards, { item, translation, flashcard_id }];
+        const id = flashcard_id;
+        const updatedFlashcards = [...currentFlashcards, { item, translation, id }];
 
         this.setState({
           newFlashcard: {

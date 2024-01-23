@@ -3,6 +3,40 @@ const serviceAccount = require('./serviceAccountKey.json');
 const admin = require('firebase-admin');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const { Logging } = require('@google-cloud/logging');
+
+const projectId = 'flashcards-learning-app';
+const logName = 'my-log';
+const serviceAccountKeyPath = './serviceAccountKey.json';
+
+
+const logging = new Logging({
+  projectId,
+  keyFilename: serviceAccountKeyPath,
+});
+
+const metadata = {
+  resource: { type: 'global' },
+  severity: 'INFO',
+};
+
+async function logFunction(text)
+{
+  const log = logging.log(logName);
+  const entry = log.entry(metadata, text);
+
+  try 
+  {
+    await log.write(entry);
+    console.log(`Logged: ${text}`);
+  } 
+  catch (error) {
+    console.error('Error writing to Google Cloud Logging:', error);
+  }
+}
+
+logFunction("Server run");
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -19,7 +53,7 @@ app.use(cors());
 
 const PORT = parseInt(process.env.PORT) || 8080;
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}...`);
+  logFunction(`Server listening on port ${PORT}...`);
 });
 
 
@@ -48,6 +82,7 @@ app.post('/api/addUser', async (req, res) =>
   const password = req.body.password;
   if(!username || !password)
   {
+    logFunction('Username and password are required');
     return res.status(400).json({error: 'Username and password are required'});
   }
 
@@ -56,7 +91,10 @@ app.post('/api/addUser', async (req, res) =>
     const userRef = db.collection('User_collection').where('username', '==', username);
     const snapshot = await userRef.get();
     if(!snapshot.empty)
+    {
+      logFunction('Username already exists');
       return res.status(409).json({error: 'Username already exists'});
+    }
 
     const newUserIdRef = db.collection('User_collection').doc('new_user_id');
     const newUserIdSnapshot = await newUserIdRef.get();
@@ -70,7 +108,7 @@ app.post('/api/addUser', async (req, res) =>
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:', error);
     return res.status(400).json({error: error});
   }
 });
@@ -81,6 +119,7 @@ app.post('/api/isLoggedIn', async (req, res) =>
 
   if(!token)
   {
+    logFunction('Token is required');
     return res.status(400).json({error: 'Token is required'});
   }
 
@@ -94,7 +133,7 @@ app.post('/api/isLoggedIn', async (req, res) =>
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:' + error);
     return res.status(500).json(error);
   }
 });
@@ -113,14 +152,17 @@ app.post('/api/logIn', async (req, res) =>
     const userRef = db.collection('User_collection').where('username', '==', username).where('password','==', password);
     const snapshot = await userRef.get();
     if(snapshot.empty)
+    {
+      logFunction('Invalid username or password');
       return res.status(401).json({error: 'Invalid username or password'});
+    }
     const userDoc = snapshot.docs[0];
     const token = generateToken(userDoc.data().user_id, userDoc.data().username);
     return res.status(200).json({user_id: userDoc.data().user_id, username: userDoc.data().username, token: token});
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:' + error);
     return res.status(500).json(error);
   }
 });
@@ -152,7 +194,7 @@ app.get('/api/getFlashcards', async (req, res) =>
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:' + error);
     return res.status(500).json(error);
   }
 });
@@ -184,7 +226,7 @@ app.put('/api/addFlashcard', async (req, res) =>
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:' + error);
     return res.status(500).json(error);
   }
 });
@@ -194,7 +236,8 @@ app.delete('/api/deleteFlashcard', async (req, res) =>
   const token = req.header('Authorization');
   const flashcard_id = parseInt(req.query.flashcard_id);
 
-  if (!token || !flashcard_id || isNaN(flashcard_id)) {
+  if (!token || !flashcard_id || isNaN(flashcard_id)) 
+  {
     return res.status(400).json({ error: 'All fields required' });
   }
 
@@ -206,7 +249,9 @@ app.delete('/api/deleteFlashcard', async (req, res) =>
 
     const flashCardRef = db.collection('Flashcards_collection').where('flashcard_id', '==', flashcard_id);
     const flashcardSnapshot = await flashCardRef.get();
-    if (flashcardSnapshot.empty) {
+    if (flashcardSnapshot.empty) 
+    {
+      logFunction('Flashcard not found');
       return res.status(404).json({ error: 'Flashcard not found' });
     }
   
@@ -219,7 +264,7 @@ app.delete('/api/deleteFlashcard', async (req, res) =>
   } 
   catch (error) 
   {
-    console.error('Error retrieving data:', error);
+    logFunction('Error retrieving data:' + error);
     return res.status(500).json(error);
   }
 });
