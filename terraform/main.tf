@@ -71,7 +71,7 @@ resource "google_app_engine_standard_app_version" "backend" {
   inbound_services = ["INBOUND_SERVICE_WARMUP"]
 
   entrypoint {
-    shell = "cd backend && npm instal &&  npm start"
+    shell = "cd backend && npm install &&  npm start"
   }
   deployment {
     zip {
