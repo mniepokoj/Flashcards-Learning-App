@@ -24,7 +24,9 @@
       "@google-cloud/firestore": "^5.0.0",
       "firebase-admin": "^9.0.0", 
       "jsonwebtoken": "^8.5.1",
-      "cors": "^2.8.5"
+      "cors": "^2.8.5",
+      "@google-cloud/logging": "11.0.0",
+      "@google-cloud/logging-bunyan": "5.0.1"
     },
     "devDependencies": {
       "c8": "^8.0.0",

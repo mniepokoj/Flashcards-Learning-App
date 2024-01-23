@@ -120,7 +120,7 @@ class FlashcardLearningComponent extends React.Component {
 
   render() {
     const { currentFlashcardIndex, userTranslation, showMessage, successMessage, errorMessage, showCorrectTranslation, flashcards, buttonsVisible, correctCount } = this.state;
-    const allFlashcardFinished = currentFlashcardIndex === flashcards.length-1
+    const allFlashcardFinished = currentFlashcardIndex === flashcards.length
     return (
       <div>
         <h2>Flashcard Learning</h2>
