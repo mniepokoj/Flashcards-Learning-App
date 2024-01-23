@@ -49,7 +49,7 @@ resource "google_app_engine_standard_app_version" "frontend" {
   runtime          = "nodejs20"
   inbound_services = ["INBOUND_SERVICE_WARMUP"]
   entrypoint {
-    shell = "cd frontend && npm start"
+    shell = "cd frontend && npm install && npm start"
   }
 
   deployment {
@@ -71,7 +71,7 @@ resource "google_app_engine_standard_app_version" "backend" {
   inbound_services = ["INBOUND_SERVICE_WARMUP"]
 
   entrypoint {
-    shell = "cd backend && npm start"
+    shell = "cd backend && npm instal &&  npm start"
   }
   deployment {
     zip {
